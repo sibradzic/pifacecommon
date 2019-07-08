@@ -4,6 +4,7 @@ import select
 import time
 import errno
 from .core import get_bit_num
+from os import listdir,path
 import pifacecommon.mcp23s17
 
 
@@ -14,7 +15,15 @@ IODIR_BOTH = None
 # IN_EVENT_DIR_OFF = INPUT_DIRECTION_OFF = 1
 # IN_EVENT_DIR_BOTH = INPUT_DIRECTION_BOTH = None
 
-GPIO_INTERRUPT_PIN = 25
+GPIO_OFFSET = 0
+GPIO_OFFSET_CHECK_PATH = '/sys/bus/gpio/devices/gpiochip0/../gpio'
+if path.isdir(GPIO_OFFSET_CHECK_PATH):
+    gpio_device_dir = listdir(GPIO_OFFSET_CHECK_PATH)
+    if gpio_device_dir and gpio_device_dir[0].startswith('gpiochip'):
+        gpio_offset_str = gpio_device_dir[0].strip('gpiochip')
+        if gpio_offset_str.isnumeric():
+            GPIO_OFFSET = int(gpio_offset_str)
+GPIO_INTERRUPT_PIN = GPIO_OFFSET + 25
 GPIO_INTERRUPT_DEVICE = "/sys/class/gpio/gpio%d" % GPIO_INTERRUPT_PIN
 GPIO_INTERRUPT_DEVICE_EDGE = '%s/edge' % GPIO_INTERRUPT_DEVICE
 GPIO_INTERRUPT_DEVICE_VALUE = '%s/value' % GPIO_INTERRUPT_DEVICE
